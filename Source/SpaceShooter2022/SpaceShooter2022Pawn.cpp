@@ -80,10 +80,13 @@ void ASpaceShooter2022Pawn::Tick(float DeltaSeconds)
 	// Calculate  movement
 	const FVector Movement = MoveDirection * MoveSpeed * DeltaSeconds;
 
+	//rotate the ship
 	if (RightValue != 0.0f) {
 		rotateAmount += RightValue * RotateSpeed * DeltaSeconds;
 		rotateAmount = FMath::Clamp(rotateAmount, -RotationMax, RotationMax);
 	}
+
+	//rotate it back if not moving
 	else if (rotateAmount < 0.0f) {
 		rotateAmount += RotateSpeed * DeltaSeconds;
 		rotateAmount = FMath::Min(rotateAmount, 0.0f);
@@ -99,13 +102,26 @@ void ASpaceShooter2022Pawn::Tick(float DeltaSeconds)
 		const FRotator NewRotation = FRotator(0.f, 0.f, rotateAmount);
 		FHitResult Hit(1.f);
 		RootComponent->MoveComponent(Movement, NewRotation, true, &Hit);
-		
+
 		if (Hit.IsValidBlockingHit())
 		{
 			const FVector Normal2D = Hit.Normal.GetSafeNormal2D();
 			const FVector Deflection = FVector::VectorPlaneProject(Movement, Normal2D) * (1.f - Hit.Time);
 			RootComponent->MoveComponent(Deflection, NewRotation, true);
 		}
+
+		//get world position
+		FVector currentLocation = RootComponent->GetComponentLocation();
+
+		//clamp position
+		currentLocation.X = FMath::Clamp(currentLocation.X, MinPosition.X, MaxPosition.X);
+		currentLocation.Y = FMath::Clamp(currentLocation.Y, MinPosition.Y, MaxPosition.Y);
+		currentLocation.Z = FMath::Clamp(currentLocation.Z, MinPosition.Z, MaxPosition.Z);
+
+		//set new position
+		RootComponent->SetWorldLocation(currentLocation, false, &Hit);
+
+
 	//}
 	
 	// Create fire direction vector
