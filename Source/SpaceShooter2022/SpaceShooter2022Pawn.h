@@ -16,12 +16,12 @@ class ASpaceShooter2022Pawn : public APawn
 	class UStaticMeshComponent* ShipMeshComponent;
 
 	/** The camera */
-	UPROPERTY(Category = Camera, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	class UCameraComponent* CameraComponent;
+	//UPROPERTY(Category = Camera, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	//class UCameraComponent* CameraComponent;
 
 	/** Camera boom positioning the camera above the character */
-	UPROPERTY(Category = Camera, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	class USpringArmComponent* CameraBoom;
+	//UPROPERTY(Category = Camera, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	//class USpringArmComponent* CameraBoom;
 
 public:
 	ASpaceShooter2022Pawn();
@@ -29,6 +29,10 @@ public:
 	/** Offset from the ships location to spawn projectiles */
 	UPROPERTY(Category = Gameplay, EditAnywhere, BlueprintReadWrite )
 	FVector GunOffset;
+
+	//Shoot Direction
+	UPROPERTY(Category = Gameplay, EditAnywhere, BlueprintReadWrite)
+	FVector ShootDirection;
 	
 	/* How fast the weapon will fire */
 	UPROPERTY(Category = Gameplay, EditAnywhere, BlueprintReadWrite)
@@ -37,6 +41,14 @@ public:
 	/* The speed our ship moves around the level */
 	UPROPERTY(Category = Gameplay, EditAnywhere, BlueprintReadWrite)
 	float MoveSpeed;
+
+	//rotate speed of the ship
+	UPROPERTY(Category = Gameplay, EditAnywhere, BlueprintReadWrite)
+	float RotateSpeed;
+
+	//max rotation
+	UPROPERTY(Category = Gameplay, EditAnywhere, BlueprintReadWrite)
+	float RotationMax;
 
 	/** Sound to play each time we fire */
 	UPROPERTY(Category = Audio, EditAnywhere, BlueprintReadWrite)
@@ -59,10 +71,22 @@ public:
 	static const FName FireForwardBinding;
 	static const FName FireRightBinding;
 
+	//Static names for Action Bindings
+	//static const FName FireBinding;
+
 private:
 
 	/* Flag to control firing  */
 	uint32 bCanFire : 1;
+	float rotateAmount;
+	bool shooting;
+
+	//fire input event
+	UFUNCTION()
+	void Fire();
+
+	UFUNCTION()
+	void UnFire();
 
 	/** Handle for efficient management of ShotTimerExpired timer */
 	FTimerHandle TimerHandle_ShotTimerExpired;
@@ -71,8 +95,8 @@ public:
 	/** Returns ShipMeshComponent subobject **/
 	FORCEINLINE class UStaticMeshComponent* GetShipMeshComponent() const { return ShipMeshComponent; }
 	/** Returns CameraComponent subobject **/
-	FORCEINLINE class UCameraComponent* GetCameraComponent() const { return CameraComponent; }
+	//FORCEINLINE class UCameraComponent* GetCameraComponent() const { return CameraComponent; }
 	/** Returns CameraBoom subobject **/
-	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
+	//FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 };
 

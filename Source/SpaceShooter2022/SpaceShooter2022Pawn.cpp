@@ -17,6 +17,7 @@ const FName ASpaceShooter2022Pawn::MoveForwardBinding("MoveForward");
 const FName ASpaceShooter2022Pawn::MoveRightBinding("MoveRight");
 const FName ASpaceShooter2022Pawn::FireForwardBinding("FireForward");
 const FName ASpaceShooter2022Pawn::FireRightBinding("FireRight");
+//const FName ASpaceShooter2022Pawn::FireBinding("Fire");
 
 ASpaceShooter2022Pawn::ASpaceShooter2022Pawn()
 {	
@@ -32,17 +33,17 @@ ASpaceShooter2022Pawn::ASpaceShooter2022Pawn()
 	FireSound = FireAudio.Object;
 
 	// Create a camera boom...
-	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
-	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->SetUsingAbsoluteRotation(true); // Don't want arm to rotate when ship does
-	CameraBoom->TargetArmLength = 1200.f;
-	CameraBoom->SetRelativeRotation(FRotator(-80.f, 0.f, 0.f));
-	CameraBoom->bDoCollisionTest = false; // Don't want to pull camera in when it collides with level
+	//CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
+	//CameraBoom->SetupAttachment(RootComponent);
+	//CameraBoom->SetUsingAbsoluteRotation(true); // Don't want arm to rotate when ship does
+	//CameraBoom->TargetArmLength = 1200.f;
+	//CameraBoom->SetRelativeRotation(FRotator(-80.f, 0.f, 0.f));
+	//CameraBoom->bDoCollisionTest = false; // Don't want to pull camera in when it collides with level
 
 	// Create a camera...
-	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("TopDownCamera"));
-	CameraComponent->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
-	CameraComponent->bUsePawnControlRotation = false;	// Camera does not rotate relative to arm
+	//CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("TopDownCamera"));
+	//CameraComponent->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
+	//CameraComponent->bUsePawnControlRotation = false;	// Camera does not rotate relative to arm
 
 	// Movement
 	MoveSpeed = 1000.0f;
@@ -50,6 +51,8 @@ ASpaceShooter2022Pawn::ASpaceShooter2022Pawn()
 	GunOffset = FVector(90.f, 0.f, 0.f);
 	FireRate = 0.1f;
 	bCanFire = true;
+	rotateAmount = 0.0f;
+	shooting = false;
 }
 
 void ASpaceShooter2022Pawn::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
@@ -61,6 +64,8 @@ void ASpaceShooter2022Pawn::SetupPlayerInputComponent(class UInputComponent* Pla
 	PlayerInputComponent->BindAxis(MoveRightBinding);
 	PlayerInputComponent->BindAxis(FireForwardBinding);
 	PlayerInputComponent->BindAxis(FireRightBinding);
+	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Pressed, this, &ASpaceShooter2022Pawn::Fire);
+	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Released, this, &ASpaceShooter2022Pawn::UnFire);
 }
 
 void ASpaceShooter2022Pawn::Tick(float DeltaSeconds)
@@ -75,10 +80,23 @@ void ASpaceShooter2022Pawn::Tick(float DeltaSeconds)
 	// Calculate  movement
 	const FVector Movement = MoveDirection * MoveSpeed * DeltaSeconds;
 
+	if (RightValue != 0.0f) {
+		rotateAmount += RightValue * RotateSpeed * DeltaSeconds;
+		rotateAmount = FMath::Clamp(rotateAmount, -RotationMax, RotationMax);
+	}
+	else if (rotateAmount < 0.0f) {
+		rotateAmount += RotateSpeed * DeltaSeconds;
+		rotateAmount = FMath::Min(rotateAmount, 0.0f);
+	}
+	else if (rotateAmount > 0.0f) {
+		rotateAmount -= RotateSpeed * DeltaSeconds;
+		rotateAmount = FMath::Max(rotateAmount, 0.0f);
+	}
+
 	// If non-zero size, move this actor
-	if (Movement.SizeSquared() > 0.0f)
-	{
-		const FRotator NewRotation = Movement.Rotation();
+	//if (Movement.SizeSquared() > 0.0f)
+	//{
+		const FRotator NewRotation = FRotator(0.f, 0.f, rotateAmount);
 		FHitResult Hit(1.f);
 		RootComponent->MoveComponent(Movement, NewRotation, true, &Hit);
 		
@@ -88,15 +106,19 @@ void ASpaceShooter2022Pawn::Tick(float DeltaSeconds)
 			const FVector Deflection = FVector::VectorPlaneProject(Movement, Normal2D) * (1.f - Hit.Time);
 			RootComponent->MoveComponent(Deflection, NewRotation, true);
 		}
-	}
+	//}
 	
 	// Create fire direction vector
-	const float FireForwardValue = GetInputAxisValue(FireForwardBinding);
-	const float FireRightValue = GetInputAxisValue(FireRightBinding);
-	const FVector FireDirection = FVector(FireForwardValue, FireRightValue, 0.f);
-
-	// Try and fire a shot
-	FireShot(FireDirection);
+	//const float FireForwardValue = GetInputAxisValue(FireForwardBinding);
+	//const float FireRightValue = GetInputAxisValue(FireRightBinding);
+	//const bool FireValue = GetInputAction
+	//
+	//// Try and fire a shot
+	//if (FireForwardValue != 0.f || FireForwardValue != 0.f || FireValue) {
+	//	const FVector FireDirection = FVector(1.f, 0.f, 0.f);
+	//	FireShot(FireDirection);
+	//}
+	if (shooting) FireShot(ShootDirection);
 }
 
 void ASpaceShooter2022Pawn::FireShot(FVector FireDirection)
@@ -130,6 +152,16 @@ void ASpaceShooter2022Pawn::FireShot(FVector FireDirection)
 			bCanFire = false;
 		}
 	}
+}
+
+void ASpaceShooter2022Pawn::Fire() 
+{
+	shooting = true;
+}
+
+void ASpaceShooter2022Pawn::UnFire()
+{
+	shooting = false;
 }
 
 void ASpaceShooter2022Pawn::ShotTimerExpired()
