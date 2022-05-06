@@ -137,7 +137,7 @@ void ASpaceShooter2022Pawn::Tick(float DeltaSeconds)
 	//	const FVector FireDirection = FVector(1.f, 0.f, 0.f);
 	//	FireShot(FireDirection);
 	//}
-	if (shooting) FireShot(ShootDirection);
+	//if (shooting) FireShot(ShootDirection);
 }
 
 void ASpaceShooter2022Pawn::FireShot(FVector FireDirection)
