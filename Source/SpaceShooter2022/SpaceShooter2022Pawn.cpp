@@ -13,10 +13,10 @@
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundBase.h"
 
-const FName ASpaceShooter2022Pawn::MoveForwardBinding("MoveForward");
-const FName ASpaceShooter2022Pawn::MoveRightBinding("MoveRight");
-const FName ASpaceShooter2022Pawn::FireForwardBinding("FireForward");
-const FName ASpaceShooter2022Pawn::FireRightBinding("FireRight");
+//const FName ASpaceShooter2022Pawn::MoveForwardBinding("MoveForward");
+//const FName ASpaceShooter2022Pawn::MoveRightBinding("MoveRight");
+//const FName ASpaceShooter2022Pawn::FireForwardBinding("FireForward");
+//const FName ASpaceShooter2022Pawn::FireRightBinding("FireRight");
 //const FName ASpaceShooter2022Pawn::FireBinding("Fire");
 
 ASpaceShooter2022Pawn::ASpaceShooter2022Pawn()
@@ -55,37 +55,37 @@ ASpaceShooter2022Pawn::ASpaceShooter2022Pawn()
 	shooting = false;
 
 	//health
-	currentHealth = MaxHealth;
+	CurrentHealth = MaxHealth;
 }
+
+//void ASpaceShooter2022Pawn::Tick(float DeltaSeconds) {}
 
 void ASpaceShooter2022Pawn::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
 	check(PlayerInputComponent);
 
 	// set up gameplay key bindings
-	PlayerInputComponent->BindAxis(MoveForwardBinding);
-	PlayerInputComponent->BindAxis(MoveRightBinding);
-	PlayerInputComponent->BindAxis(FireForwardBinding);
-	PlayerInputComponent->BindAxis(FireRightBinding);
-	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Pressed, this, &ASpaceShooter2022Pawn::Fire);
-	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Released, this, &ASpaceShooter2022Pawn::UnFire);
+	//PlayerInputComponent->BindAxis(MoveForwardBinding);
+	//PlayerInputComponent->BindAxis(MoveRightBinding);
+	//PlayerInputComponent->BindAxis(FireForwardBinding);
+	//PlayerInputComponent->BindAxis(FireRightBinding);
+	//PlayerInputComponent->BindAction(TEXT("Fire"), IE_Pressed, this, &ASpaceShooter2022Pawn::Fire);
+	//PlayerInputComponent->BindAction(TEXT("Fire"), IE_Released, this, &ASpaceShooter2022Pawn::UnFire);
 }
 
-void ASpaceShooter2022Pawn::Tick(float DeltaSeconds)
+void ASpaceShooter2022Pawn::MovePlayer(float DeltaSeconds, FVector MoveDirection)
 {
-	// Find movement direction
-	const float ForwardValue = GetInputAxisValue(MoveForwardBinding);
-	const float RightValue = GetInputAxisValue(MoveRightBinding);
-
 	// Clamp max size so that (X=1, Y=1) doesn't cause faster movement in diagonal directions
-	const FVector MoveDirection = FVector(ForwardValue, RightValue, 0.f).GetClampedToMaxSize(1.0f);
+	MoveDirection = MoveDirection.GetClampedToMaxSize(1.0f);
+
+	
 
 	// Calculate  movement
 	const FVector Movement = MoveDirection * MoveSpeed * DeltaSeconds;
 
 	//rotate the ship
-	if (RightValue != 0.0f) {
-		rotateAmount += RightValue * RotateSpeed * DeltaSeconds;
+	if (MoveDirection.X != 0.0f) {
+		rotateAmount += MoveDirection.X * RotateSpeed * DeltaSeconds;
 		rotateAmount = FMath::Clamp(rotateAmount, -RotationMax, RotationMax);
 	}
 
@@ -99,45 +99,30 @@ void ASpaceShooter2022Pawn::Tick(float DeltaSeconds)
 		rotateAmount = FMath::Max(rotateAmount, 0.0f);
 	}
 
-	// If non-zero size, move this actor
-	//if (Movement.SizeSquared() > 0.0f)
+	if (GEngine)
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, Movement.ToString());
+
+	const FRotator NewRotation = FRotator(0.f, 0.f, rotateAmount);
+	FHitResult Hit(1.f);
+	RootComponent->MoveComponent(Movement, NewRotation, true, &Hit);
+
+	//if (Hit.IsValidBlockingHit())
 	//{
-		const FRotator NewRotation = FRotator(0.f, 0.f, rotateAmount);
-		FHitResult Hit(1.f);
-		RootComponent->MoveComponent(Movement, NewRotation, true, &Hit);
-
-		if (Hit.IsValidBlockingHit())
-		{
-			const FVector Normal2D = Hit.Normal.GetSafeNormal2D();
-			const FVector Deflection = FVector::VectorPlaneProject(Movement, Normal2D) * (1.f - Hit.Time);
-			RootComponent->MoveComponent(Deflection, NewRotation, true);
-		}
-
-		//get world position
-		FVector currentLocation = RootComponent->GetComponentLocation();
-
-		//clamp position
-		currentLocation.X = FMath::Clamp(currentLocation.X, MinPosition.X, MaxPosition.X);
-		currentLocation.Y = FMath::Clamp(currentLocation.Y, MinPosition.Y, MaxPosition.Y);
-		currentLocation.Z = FMath::Clamp(currentLocation.Z, MinPosition.Z, MaxPosition.Z);
-
-		//set new position
-		RootComponent->SetWorldLocation(currentLocation, false, &Hit);
-
-
+	//	const FVector Normal2D = Hit.Normal.GetSafeNormal2D();
+	//	const FVector Deflection = FVector::VectorPlaneProject(Movement, Normal2D) * (1.f - Hit.Time);
+	//	RootComponent->MoveComponent(Deflection, NewRotation, true);
 	//}
-	
-	// Create fire direction vector
-	//const float FireForwardValue = GetInputAxisValue(FireForwardBinding);
-	//const float FireRightValue = GetInputAxisValue(FireRightBinding);
-	//const bool FireValue = GetInputAction
-	//
-	//// Try and fire a shot
-	//if (FireForwardValue != 0.f || FireForwardValue != 0.f || FireValue) {
-	//	const FVector FireDirection = FVector(1.f, 0.f, 0.f);
-	//	FireShot(FireDirection);
-	//}
-	//if (shooting) FireShot(ShootDirection);
+
+	//get world position
+	FVector currentLocation = RootComponent->GetComponentLocation();
+
+	//clamp position
+	currentLocation.X = FMath::Clamp(currentLocation.X, MinPosition.X, MaxPosition.X);
+	currentLocation.Y = FMath::Clamp(currentLocation.Y, MinPosition.Y, MaxPosition.Y);
+	currentLocation.Z = FMath::Clamp(currentLocation.Z, MinPosition.Z, MaxPosition.Z);
+
+	//set new position
+	RootComponent->SetWorldLocation(currentLocation, false, &Hit);
 }
 
 void ASpaceShooter2022Pawn::FireShot(FVector FireDirection)

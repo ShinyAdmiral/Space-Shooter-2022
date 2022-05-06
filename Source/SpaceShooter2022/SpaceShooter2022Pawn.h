@@ -29,6 +29,9 @@ public:
 	UPROPERTY(Category = Gameplay, EditAnywhere, BlueprintReadWrite)
 	float MaxHealth;
 
+	UPROPERTY(Category = Gameplay, EditAnywhere, BlueprintReadWrite)
+	float CurrentHealth;
+
 	/** Offset from the ships location to spawn projectiles */
 	UPROPERTY(Category = Gameplay, EditAnywhere, BlueprintReadWrite )
 	FVector GunOffset;
@@ -65,13 +68,17 @@ public:
 	class USoundBase* FireSound;
 
 	// Begin Actor Interface
-	virtual void Tick(float DeltaSeconds) override;
+	//virtual void Tick(float DeltaSeconds) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 	// End Actor Interface
 
 	/* Fire a shot in the specified direction */
-	UFUNCTION()
-	virtual void FireShot(FVector FireDirection);
+	//UPROPERTY(Category = Gameplay, EditAnywhere, BlueprintCallable)
+	UFUNCTION(BlueprintCallable)
+	void FireShot(FVector FireDirection);
+
+	UFUNCTION(BlueprintCallable)
+	void MovePlayer(float DeltaSeconds, FVector MoveDirection);
 
 	/* Handler for the fire timer expiry */
 	void ShotTimerExpired();
@@ -84,6 +91,13 @@ public:
 
 	//Static names for Action Bindings
 	//static const FName FireBinding;
+	 
+	//fire input event
+	UFUNCTION(BlueprintCallable)
+	void Fire();
+
+	UFUNCTION(BlueprintCallable)
+	void UnFire();
 
 private:
 
@@ -91,14 +105,6 @@ private:
 	uint32 bCanFire : 1;
 	float rotateAmount;
 	bool shooting;
-	float currentHealth;
-
-	//fire input event
-	UFUNCTION()
-	void Fire();
-
-	UFUNCTION()
-	void UnFire();
 
 	/** Handle for efficient management of ShotTimerExpired timer */
 	FTimerHandle TimerHandle_ShotTimerExpired;
