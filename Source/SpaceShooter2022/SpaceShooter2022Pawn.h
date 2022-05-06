@@ -26,6 +26,9 @@ class ASpaceShooter2022Pawn : public APawn
 public:
 	ASpaceShooter2022Pawn();
 
+	UPROPERTY(Category = Gameplay, EditAnywhere, BlueprintReadWrite)
+	float MaxHealth;
+
 	/** Offset from the ships location to spawn projectiles */
 	UPROPERTY(Category = Gameplay, EditAnywhere, BlueprintReadWrite )
 	FVector GunOffset;
@@ -87,6 +90,7 @@ private:
 	uint32 bCanFire : 1;
 	float rotateAmount;
 	bool shooting;
+	float currentHealth;
 
 	//fire input event
 	UFUNCTION()

@@ -53,6 +53,9 @@ ASpaceShooter2022Pawn::ASpaceShooter2022Pawn()
 	bCanFire = true;
 	rotateAmount = 0.0f;
 	shooting = false;
+
+	//health
+	currentHealth = MaxHealth;
 }
 
 void ASpaceShooter2022Pawn::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
